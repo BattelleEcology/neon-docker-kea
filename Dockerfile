@@ -24,7 +24,7 @@ RUN apk add --update --upgrade --no-cache \
     kafkacat \
     jq \
     libcap-utils \
-    && setcap 'cap_net_bind_service=ep cap_sys_admin=ep' /usr/sbin/kea-dhcp4 \
+    && setcap 'cap_net_bind_service=ep cap_net_raw=ep' /usr/sbin/kea-dhcp4 \
     && rm -rf /var/cache/apk/* \
     && mkdir -p /run/kea \
     && chown kea:kea /run/kea \
