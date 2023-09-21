@@ -1,0 +1,25 @@
+# Copyright (C) 2019-2020 Internet Systems Consortium, Inc. ("ISC")
+
+% GRAPE_QUERY recognized a GRAPE query: %1
+This debug message is printed when the GRAPE query was recognized. The
+FQDN flags N and S are set to 1. S is forced to 0 to avoid throwing an 
+exception and dropping the package.
+
+% GRAPE_PACKET_OPTIONS_SKIPPED an error upacking an option, caused subsequent options to be skipped: %1
+A debug message issued when an option failed to unpack correctly, making it
+impossible to unpack the remaining options in the DHCPv4 query. The server
+will still attempt to service the packet. The sole argument provides a
+reason for unpacking error.
+
+% GRAPE_PACKET_UNPACK_FAILED failed to parse query from %1 to %2, received over interface %3, reason: %4
+This debug message is issued when received DHCPv4 query is malformed and
+can't be parsed by the buffer4_receive callout. The query will be
+dropped by the server. The first three arguments specify source IP address,
+destination IP address and the interface. The last argument provides a
+reason for failure.
+
+% GRAPE_UNLOAD Grape hooks library has been unloaded
+This info message indicates that the Grape hooks library has been unloaded.
+
+% GRAPE_LOAD Grape hooks library has been loaded
+This info message indicates that the Grape hooks library has been loaded.
