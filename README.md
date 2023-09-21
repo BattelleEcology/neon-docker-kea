@@ -1,8 +1,6 @@
 
 Description
 ===========
-[![Docker Repository on Quay](https://quay.io/repository/battelleecology/kea-neon/status "Docker Repository on Quay")](https://quay.io/repository/battelleecology/kea-neon)
-
 [Kea] provides DHCPv4 and DHCPv6 servers, a dynamic DNS update module, a portable DHCP library, libdhcp++, a control agent that provides a management REST interface, a NETCONF agent that provides a YANG/NETCONF interface for Kea,and a DHCP benchmarking tool, perfdhcp.
 
 Kea is developed by Internet Systems Consortium, Inc.
