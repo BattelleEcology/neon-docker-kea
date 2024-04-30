@@ -3,7 +3,7 @@ KEA_MSG_COMPILER ?= kea-msg-compiler
 KEA_INCLUDE ?= /usr/local/include/kea
 KEA_LIB ?= /usr/local/lib
 
-OBJECTS = src/messages.o src/log.o src/callouts.o src/version.o
+OBJECTS = src/messages.o src/log.o src/callouts.o src/version.o src/multi_threading_compatible.o
 DEPS = $(OBJECTS:.o=.d)
 CXXFLAGS = -I $(KEA_INCLUDE) -fPIC -Wno-deprecated -std=c++17
 LDFLAGS = -L $(KEA_LIB) -shared -lkea-dhcpsrv -lkea-dhcp++ -lkea-hooks -lkea-log -lkea-util -lkea-exceptions
