@@ -77,8 +77,7 @@ void checkFqdnOption(Pkt4Ptr query){
     size_t options_start=buffer_in.getPosition();
     // Use readVector because a function which parses option requires
     // a vector as an input.
-    std::vector<uint8_t> buf;
-    buf.resize(opts_len);
+    std::vector<uint8_t> buf(opts_len, 0);
     buffer_in.readVector(buf, opts_len);
     size_t offset=0;
     while(offset < buf.size()){
