@@ -81,16 +81,20 @@ void checkFqdnOption(Pkt4Ptr query){
     buffer_in.readVector(buf, opts_len);
     size_t offset=0;
     while(offset < buf.size()){
-        size_t last_offset=offset;
-        uint8_t opt_type = buf[offset++];
-        uint8_t len=buf[offset++];
-        if(opt_type==DHO_FQDN){
-            if((buf[last_offset+2] & 0x09) == 0x09)
-                query->data_[last_offset+options_start+2] &=0xF7;
+      size_t last_offset=offset;
+      uint8_t opt_type = buf[offset++];
+      if(opt_type==DHO_FQDN){
+        if((last_offset+2) < buf.size()){
+          if((buf[last_offset+2] & 0x09) == 0x09)
+              query->data_[last_offset+options_start+2] &=0xF7;
         }
+      }
+      if(opt_type==DHO_END)
+          break;
+      if(offset < buf.size()){
+        uint8_t len=buf[offset++];
         offset+=len;
-        if(opt_type==DHO_END)
-            break;
+      }
     }
 }
 
