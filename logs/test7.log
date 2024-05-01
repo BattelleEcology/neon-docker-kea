@@ -1,0 +1,29 @@
+eplacing leases with valid ones from lease file
+Reading lease file /kea/kea-leases4.csv for valid leases
+Reading lease file /kea/kea-leases4.csv.2 for valid leases
+Removing expired leases
+% Reached end of topic table.dhcp.leases [0] at offset 10208665: exiting
+2024-05-01 01:34:59.603 INFO  [kea-dhcp4.dhcp4/26.140316287366736] DHCP4_STARTING Kea DHCPv4 server version 2.4.1 (stable) starting
+2024-05-01 01:34:59.605 INFO  [kea-dhcp4.hosts/26.140316287366736] HOSTS_BACKENDS_REGISTERED the following host backend types are available: mysql postgresql 
+2024-05-01 01:34:59.606 INFO  [kea-dhcp4.hooks/26.140316287366736] HOOKS_LIBRARY_CLOSED hooks library /usr/lib/kea/hooks/libdhcp_run_script.so successfully closed
+2024-05-01 01:34:59.606 INFO  [kea-dhcp4.hooks/26.140316287366736] HOOKS_LIBRARY_CLOSED hooks library /usr/lib/kea/hooks/kea-hook-grape.so successfully closed
+2024-05-01 01:34:59.606 INFO  [kea-dhcp4.dhcpsrv/26.140316287366736] DHCPSRV_CFGMGR_NEW_SUBNET4 a new subnet has been added to configuration: 10.123.33.2/20 with params: valid-lifetime=300
+2024-05-01 01:34:59.608 INFO  [kea-dhcp4.dhcpsrv/26.140316287366736] DHCPSRV_CFGMGR_SOCKET_TYPE_SELECT using socket type raw
+2024-05-01 01:34:59.700 INFO  [kea-dhcp4.dhcpsrv/26.140316287366736] DHCPSRV_CFGMGR_SOCKET_TYPE_SELECT using socket type raw
+2024-05-01 01:34:59.700 INFO  [kea-dhcp4.dhcpsrv/26.140316287366736] DHCPSRV_CFGMGR_ADD_IFACE listening on interface vlan
+2024-05-01 01:34:59.700 INFO  [kea-dhcp4.run-script-hooks/26.140316287366736] RUN_SCRIPT_LOAD Run Script hooks library has been loaded
+2024-05-01 01:34:59.700 INFO  [kea-dhcp4.hooks/26.140316287366736] HOOKS_LIBRARY_LOADED hooks library /usr/lib/kea/hooks/libdhcp_run_script.so successfully loaded
+2024-05-01 01:34:59.700 INFO  [kea-dhcp4.grape-hooks/26.140316287366736] GRAPE_LOAD Grape hooks library has been loaded
+2024-05-01 01:34:59.700 INFO  [kea-dhcp4.hooks/26.140316287366736] HOOKS_LIBRARY_LOADED hooks library /usr/lib/kea/hooks/kea-hook-grape.so successfully loaded
+2024-05-01 01:34:59.700 INFO  [kea-dhcp4.dhcp4/26.140316287366736] DHCP4_CONFIG_COMPLETE DHCPv4 server has completed configuration: added IPv4 subnets: 1; DDNS: disabled
+2024-05-01 01:34:59.702 INFO  [kea-dhcp4.dhcpsrv/26.140316287366736] DHCPSRV_MEMFILE_DB opening memory file lease database: lfc-interval=1800 max-row-errors=0 name=/kea/kea-leases4.csv persist=true type=memfile universe=4
+2024-05-01 01:34:59.702 INFO  [kea-dhcp4.dhcpsrv/26.140316287366736] DHCPSRV_MEMFILE_LEASE_FILE_LOAD loading leases from file /kea/kea-leases4.csv.2
+2024-05-01 01:34:59.704 INFO  [kea-dhcp4.dhcpsrv/26.140316287366736] DHCPSRV_MEMFILE_LEASE_FILE_LOAD loading leases from file /kea/kea-leases4.csv
+2024-05-01 01:34:59.704 INFO  [kea-dhcp4.dhcpsrv/26.140316287366736] DHCPSRV_MEMFILE_EXTRACT_EXTENDED_INFO4 extracting extended info saw 45 leases, extended info sanity checks modified 0 / updated 0 leases and 0 leases have relay or remote id
+2024-05-01 01:34:59.704 INFO  [kea-dhcp4.dhcpsrv/26.140316287366736] DHCPSRV_MEMFILE_LFC_SETUP setting up the Lease File Cleanup interval to 1800 sec
+2024-05-01 01:34:59.712 INFO  [kea-dhcp4.dhcpsrv/26.140316287366736] DHCPSRV_CFGMGR_USE_ALLOCATOR using the iterative allocator for V4 leases in subnet 10.123.33.2/20
+2024-05-01 01:34:59.713 WARN  [kea-dhcp4.dhcp4/26.140316287366736] DHCP4_MULTI_THREADING_INFO enabled: no, number of threads: 0, queue size: 0
+2024-05-01 01:34:59.713 INFO  [kea-dhcp4.dhcp4/26.140316287366736] DHCP4_STARTED Kea DHCPv4 server version 2.4.1 started
+2024-05-01 01:34:59.837 INFO  [kea-dhcp4.leases/26.140316287366736] DHCP4_LEASE_ADVERT [hwtype=1 7c:e0:44:00:1e:f6], cid=[no info], tid=0x7a843322: lease 10.123.33.87 will be advertised
+/usr/include/c++/13.2.1/bits/stl_vector.h:1125: std::vector<_Tp, _Alloc>::reference std::vector<_Tp, _Alloc>::operator[](size_type) [with _Tp = unsigned char; _Alloc = std::allocator<unsigned char>; reference = unsigned char&; size_type = long unsigned int]: Assertion '__n < this->size()' failed.
+Aborted (core dumped)
