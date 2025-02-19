@@ -48,9 +48,8 @@
           id: 'auth'
           uses: 'google-github-actions/auth@v2'
           with:
-            project_id: neon-shared-service
             workload_identity_provider: "${{ vars.SHARED_WIF_PROVIDER }}"
-            # service_account: "${{ vars.SHARED_WIF_SERVICE_ACCOUNT }}"
+            service_account: "${{ vars.SHARED_WIF_SERVICE_ACCOUNT }}"
             token_format: 'access_token'
   
         # Login to google artifact registry
