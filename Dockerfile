@@ -1,4 +1,4 @@
-FROM alpine:3.22.2 as build
+FROM alpine:3.22.2 AS build
 
 RUN apk add --update --upgrade --no-cache \
         curl \
@@ -21,7 +21,7 @@ RUN apk add --update --upgrade --no-cache \
     kea \
     kea-hook-run-script \
     bash \
-    kafkacat \
+    kcat \
     jq \
     libcap-utils \
     && setcap 'cap_net_bind_service=ep cap_net_raw=ep' /usr/sbin/kea-dhcp4 \
