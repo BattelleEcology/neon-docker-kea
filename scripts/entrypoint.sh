@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+chmod 750 /run/kea
 if [ -e /run/kea/kea-dhcp4.kea-dhcp4.pid ]; then
   rm /run/kea/kea-dhcp4.kea-dhcp4.pid
 fi
