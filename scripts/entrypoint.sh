@@ -1,5 +1,7 @@
 #!/bin/sh
 set -e
+mkdir -p /run/kea/socket
+chmod 750 /run/kea/socket
 if [ -e /run/kea/kea-dhcp4.kea-dhcp4.pid ]; then
   rm /run/kea/kea-dhcp4.kea-dhcp4.pid
 fi
