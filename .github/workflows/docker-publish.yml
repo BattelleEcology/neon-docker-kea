@@ -41,7 +41,7 @@
   
       steps:
         - name: Checkout repository
-          uses: actions/checkout@v5
+          uses: actions/checkout@v6
   
         # Handle Google pkg.dev login
         - name: 'Google auth'
