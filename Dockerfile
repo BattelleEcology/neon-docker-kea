@@ -5,6 +5,7 @@ RUN apk add --update --upgrade --no-cache \
         git \
         wget \
         kea-dev \
+        kealib-dev \
         make \
         build-base \
         binutils \
