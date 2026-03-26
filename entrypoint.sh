@@ -10,5 +10,5 @@ cat >/run/kea/kea-env.sh <<HERE
 KAFKA_BOOTSTRAP_SERVER="${KAFKA_BOOTSTRAP_SERVER}"
 KAFKA_TOPIC_NAME="${KAFKA_TOPIC_NAME}"
 HERE
-/scripts/clean_leases.sh
+/usr/share/kea/scripts/clean_leases.sh
 /usr/sbin/kea-dhcp4 -c "${KEA_CONFIG_FILE}"
