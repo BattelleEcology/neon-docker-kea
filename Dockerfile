@@ -29,7 +29,7 @@ RUN apk add --update --upgrade --no-cache \
     && rm -rf /var/cache/apk/* \
     && mkdir -p /run/kea \
     && chown kea:kea /run/kea \
-    && mkdir /usr/share/kea/scripts
+    && mkdir -p /usr/share/kea/scripts
 COPY ./kea-dhcp4.conf /usr/local/etc/kea/
 COPY --from=build /build/kea-hook-grape.so /usr/lib/kea/hooks/
 COPY --chown=kea:kea scripts /usr/share/kea/scripts/
