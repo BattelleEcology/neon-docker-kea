@@ -1,4 +1,4 @@
-FROM alpine:3.24.1 AS build
+FROM alpine:3.24.2 AS build
 
 RUN apk add --update --upgrade --no-cache \
         curl \
@@ -17,7 +17,7 @@ RUN ls -la /build/src
 RUN cd /build \
     && make KEA_MSG_COMPILER=/usr/bin/kea-msg-compiler KEA_INCLUDE=/usr/include/kea KEA_LIB=/usr/lib 
 
-FROM alpine:3.24.1
+FROM alpine:3.24.2
 RUN apk add --update --upgrade --no-cache \
     kea \
     kea-hook-run-script \
