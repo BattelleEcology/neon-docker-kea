@@ -18,5 +18,13 @@
       automerge: true,
       commitMessageTopic: 'Alpine',
     },
+    {
+      // Action updates also merge once their PR build passes. They don't
+      // change the alpine version, so they publish the image but add no new
+      // repo tag.
+      description: 'Automerge GitHub Actions updates',
+      matchManagers: ['github-actions'],
+      automerge: true,
+    },
   ],
 }
