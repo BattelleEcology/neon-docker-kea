@@ -1,15 +1,12 @@
 # Copyright (C) 2019-2020 Internet Systems Consortium, Inc. ("ISC")
+#
+# After editing, regenerate messages.h and messages.cc with "make messages".
 
-% GRAPE_QUERY recognized a GRAPE query: %1
-This debug message is printed when the GRAPE query was recognized. The
-FQDN flags N and S are set to 1. S is forced to 0 to avoid throwing an 
-exception and dropping the package.
-
-% GRAPE_PACKET_OPTIONS_SKIPPED an error upacking an option, caused subsequent options to be skipped: %1
-A debug message issued when an option failed to unpack correctly, making it
-impossible to unpack the remaining options in the DHCPv4 query. The server
-will still attempt to service the packet. The sole argument provides a
-reason for unpacking error.
+% GRAPE_QUERY cleared the N flag of the Client FQDN option in a query from %1
+This debug message is printed when a query's Client FQDN option (81) had
+both the N and S flags set, which RFC 4702 forbids and Kea would reject.
+The hook clears N so that Kea accepts the packet. The argument is the
+source IP address of the query.
 
 % GRAPE_PACKET_UNPACK_FAILED failed to parse query from %1 to %2, received over interface %3, reason: %4
 This debug message is issued when received DHCPv4 query is malformed and

@@ -23,7 +23,7 @@ jobs:
     outputs:
       alpine: ${{ steps.version.outputs.alpine }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       # The Dockerfile's FROM alpine:<version> lines are the single source of
@@ -41,7 +41,7 @@ jobs:
   # https://github.com/docker/github-builder
   build:
     needs: plan
-    uses: docker/github-builder/.github/workflows/build.yml@v1
+    uses: docker/github-builder/.github/workflows/build.yml@a31d2311da4d55e21b978c1c52bab82ba97d51ee # v1.19.0
     permissions:
       contents: read # to fetch the repository content
       packages: write # to push to ghcr.io
@@ -49,9 +49,12 @@ jobs:
     with:
       output: image
       push: true
-      platforms: linux/amd64
+      # Each platform builds natively on its own runner (the workflow's default
+      # runner mapping sends linux/arm* to ubuntu-*-arm), then they're merged
+      # into one multi-arch manifest
+      platforms: linux/amd64,linux/arm64
       meta-images: |
-        ${{ vars.SHARED_WIF_LOCATON }}-docker.pkg.dev/${{ vars.SHARED_WIF_PROJECT }}/${{ vars.SHARED_WIF_REPO }}/${{ github.event.repository.name }}
+        ${{ vars.SHARED_WIF_LOCATION }}-docker.pkg.dev/${{ vars.SHARED_WIF_PROJECT }}/${{ vars.SHARED_WIF_REPO }}/${{ github.event.repository.name }}
         ghcr.io/battelleecology/${{ github.event.repository.name }}
       # Images from main also carry the alpine version (v3.24.3). Later main
       # builds on the same alpine version move that tag to the newer image.
@@ -67,7 +70,7 @@ jobs:
       set-meta-labels: true
       registry-identities: |
         - type: gcp-wif
-          registry: ${{ vars.SHARED_WIF_LOCATON }}-docker.pkg.dev
+          registry: ${{ vars.SHARED_WIF_LOCATION }}-docker.pkg.dev
           workload_identity_provider: ${{ vars.SHARED_WIF_PROVIDER }}
           service_account: ${{ vars.SHARED_WIF_SERVICE_ACCOUNT }}
     secrets:
@@ -110,10 +113,10 @@ jobs:
       security-events: write # to upload sarif results
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         env:
           TRIVY_USERNAME: ${{ github.actor }}
           TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
@@ -123,6 +126,6 @@ jobs:
           output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4.39.3
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           sarif_file: "trivy-results.sarif"

@@ -1,43 +1,35 @@
 FROM alpine:3.24.4 AS build
 
-RUN apk add --update --upgrade --no-cache \
-        curl \
-        git \
-        wget \
+RUN apk add --no-cache \
         kea-dev \
         kealib-dev \
-        make \
-        build-base \
-        binutils \
-      && mkdir -p /build/src
+        build-base
 
-COPY Makefile /build/
-COPY src/ /build/src/
-RUN ls -la /build/src
-RUN cd /build \
-    && make KEA_MSG_COMPILER=/usr/bin/kea-msg-compiler KEA_INCLUDE=/usr/include/kea KEA_LIB=/usr/lib 
+WORKDIR /build
+COPY Makefile ./
+COPY src/ src/
+RUN make KEA_INCLUDE=/usr/include/kea KEA_LIB=/usr/lib
 
 FROM alpine:3.24.4
-RUN apk add --update --upgrade --no-cache \
+RUN apk add --upgrade --no-cache \
     kea \
     kea-hook-run-script \
     bash \
     kcat \
     jq \
     libcap-utils \
+    tini \
     && setcap 'cap_net_bind_service=ep cap_net_raw=ep' /usr/sbin/kea-dhcp4 \
-    && rm -rf /var/cache/apk/* \
     && mkdir -p /run/kea \
-    && chown kea:kea /run/kea \
-    && mkdir -p /usr/share/kea/scripts \
-    && mkdir -p /scripts
-COPY ./kea-dhcp4.conf /usr/local/etc/kea/
+    && chown kea:kea /run/kea
+COPY kea-dhcp4.conf /usr/local/etc/kea/
 COPY --from=build /build/kea-hook-grape.so /usr/lib/kea/hooks/
-COPY --chown=kea:kea scripts /usr/share/kea/scripts/
-COPY /entrypoint.sh /scripts/entrypoint.sh
+# Owned by root, so the kea user can't change the scripts Kea runs
+COPY scripts/ /usr/share/kea/scripts/
+COPY entrypoint.sh /scripts/entrypoint.sh
 
 USER kea:kea
-# Kubernetes pod will require the following capabilities in it's security policy to run:
+# Kubernetes pod will require the following capabilities in its security policy to run:
 # - NET_BIND_SERVICE
 # - NET_RAW
 
@@ -51,5 +43,8 @@ ENV KEA_CONFIG_FILE=/usr/local/etc/kea/kea-dhcp4.conf
 ENV KEA_DHCP_DATA_DIR=/kea \
     KEA_CONTROL_SOCKET_DIR=/run/kea/socket
 
-ENTRYPOINT ["/scripts/entrypoint.sh"]
+# tini runs as PID 1 to forward signals to kea-dhcp4 and reap orphaned
+# processes, such as the watchdog busybox timeout leaves behind in
+# entrypoint.sh, which kea-dhcp4 wouldn't reap.
+ENTRYPOINT ["/sbin/tini", "--", "/scripts/entrypoint.sh"]
 

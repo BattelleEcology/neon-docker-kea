@@ -1,29 +1,67 @@
 #!/usr/bin/env bash
+# Runs at startup, before kea-dhcp4. Republishes the still-valid leases from
+# Kea's memfile lease files to Kafka, then tombstones the leases in the topic
+# that have expired.
 set -eo pipefail
 
-echo "Replacing leases with valid ones from lease file"
-# This will break without these settings
-shopt -s nullglob dotglob
-curdate=$(date +'%s')
-for leasefile in /kea/*.csv*; do
-    echo "Reading lease file ${leasefile} for valid leases"
-    tail -n +2 <"$leasefile" | \
-    awk -F , '{print $2,$4,$5,$1}' | \
-    while read -r mac expiration valid_lifetime ip; do
-        if (( curdate - expiration <= valid_lifetime )); then
-            event_timestamp=$((valid_lifetime - expiration))
-            mac=$(echo "${mac}" | tr -d ':')
-            msg="{\"timestamp\":${event_timestamp},\"valid_lifetime\":${expiration},\"mac\":\"${mac}\",\"ip\":\"${ip}\"}"
-            echo "Sending kafka message topic: ${KAFKA_TOPIC_NAME} key: ${mac} value: ${msg}"
-            echo -n "${mac}:${msg}" | kcat -b "${KAFKA_BOOTSTRAP_SERVER}" -t "${KAFKA_TOPIC_NAME}" -K: -P -zzstd
-        fi
-    done
+kcat_produce=(kcat -b "${KAFKA_BOOTSTRAP_SERVER}" -t "${KAFKA_TOPIC_NAME}" -P -K: -zzstd
+  # Give up on a message after 30s rather than the default 5 minutes, so an
+  # unreachable broker doesn't hold up DHCP for long.
+  -X message.timeout.ms=30000)
+
+# The lease files, oldest first, the way Kea loads them: lease file cleanup
+# (LFC) leaves either a merged <file>.completed or the older <file>.2 and
+# <file>.1, and <file> holds the newest records.
+shopt -s nullglob
+lease_files=()
+for leasefile in /kea/*.csv; do
+    if [ -e "${leasefile}.completed" ]; then
+        lease_files+=("${leasefile}.completed")
+    else
+        for old in "${leasefile}.2" "${leasefile}.1"; do
+            [ -e "${old}" ] && lease_files+=("${old}")
+        done
+    fi
+    lease_files+=("${leasefile}")
 done
-shopt -u nullglob dotglob
+shopt -u nullglob
+
+if [ ${#lease_files[@]} -gt 0 ]; then
+    echo "Replacing leases with valid ones from lease files: ${lease_files[*]}"
+    # Lease file columns: 1 address, 2 hwaddr, 4 valid_lifetime, 5 expire,
+    # 10 state. A lease can appear many times; the record with the latest
+    # client last transaction time (cltt = expire - valid_lifetime) is its
+    # current state, and on a tie the later record wins. Kea marks a deleted
+    # lease with a record whose valid_lifetime is 0, so it never counts as
+    # valid.
+    awk -F, -v now="$(date +%s)" '
+        BEGIN { now += 0 }
+        FNR == 1 { next }  # header
+        {
+            mac = $2; gsub(":", "", mac)
+            if (mac == "") next
+            cltt = $5 - $4
+            if (!(mac in best) || cltt >= best[mac]) {
+                best[mac] = cltt; lft[mac] = $4 + 0; expire[mac] = $5 + 0
+                ip[mac] = $1; state[mac] = $10 + 0
+            }
+        }
+        END {
+            for (mac in best) {
+                # state 0 is an active lease (an empty column counts as 0)
+                if (expire[mac] > now && state[mac] == 0)
+                    printf "%s:{\"timestamp\":%d,\"valid_lifetime\":%d,\"mac\":\"%s\",\"ip\":\"%s\"}\n", mac, best[mac], lft[mac], mac, ip[mac]
+            }
+        }' "${lease_files[@]}" \
+      | tee /dev/stderr \
+      | "${kcat_produce[@]}"
+fi
 
 echo "Removing expired leases"
+# The last message per key is the lease's current state; a null payload is a
+# tombstone. -n so that inputs reads every message, the first one included.
 expired_leases=$(kcat -b "${KAFKA_BOOTSTRAP_SERVER}" -t "${KAFKA_TOPIC_NAME}" -e -C -J \
-  | jq -r 'reduce inputs as $line ({}; . + {($line.key): $line.payload})
+  | jq -n -r 'reduce inputs as $line ({}; . + {($line.key): $line.payload})
     | to_entries
     | .[]
     | select(.value!=null)
@@ -34,5 +72,5 @@ expired_leases=$(kcat -b "${KAFKA_BOOTSTRAP_SERVER}" -t "${KAFKA_TOPIC_NAME}" -e
 
 for mac in $expired_leases; do
     echo "Removing expired lease for mac: ${mac}"
-    echo -n "${mac}:" | kcat -b "${KAFKA_BOOTSTRAP_SERVER}" -t "${KAFKA_TOPIC_NAME}" -P -K: -Z -zzstd
+    echo -n "${mac}:" | "${kcat_produce[@]}" -Z
 done
