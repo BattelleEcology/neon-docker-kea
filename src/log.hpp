@@ -9,7 +9,7 @@
 #include <log/logger_support.h>
 #include <log/macros.h>
 #include <log/log_dbglevels.h>
-#include "messages.hpp"
+#include "messages.h"
 
 namespace isc {
 namespace grape {
