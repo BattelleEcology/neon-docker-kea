@@ -1,5 +1,9 @@
 name: Docker
 
+# Release flow: Renovate bumps the alpine base image in the Dockerfile and
+# automerges once the PR build passes. The push to main then publishes the
+# image tagged v<alpine version> and tags this repo v<alpine version>.
+
 on:
   push:
     branches: [ main ]
@@ -12,9 +16,31 @@ permissions:
   contents: read
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      alpine: ${{ steps.version.outputs.alpine }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      # The Dockerfile's FROM alpine:<version> lines are the single source of
+      # the version, so the image and git tags can't drift from what was built
+      - id: version
+        run: |
+          versions=$(sed -n 's/^FROM alpine:\([^ ]*\).*/\1/p' Dockerfile | sort -u)
+          if [ "$(printf '%s\n' "$versions" | grep -c .)" -ne 1 ]; then
+            echo "::error file=Dockerfile::Expected one alpine version across the FROM lines, got: ${versions:-none}"
+            exit 1
+          fi
+          echo "alpine=$versions" >> "$GITHUB_OUTPUT"
+
   # Build, sign and push with Docker's reusable workflow
   # https://github.com/docker/github-builder
   build:
+    needs: plan
     uses: docker/github-builder/.github/workflows/build.yml@v1
     permissions:
       contents: read # to fetch the repository content
@@ -27,7 +53,12 @@ jobs:
       meta-images: |
         ${{ vars.SHARED_WIF_LOCATON }}-docker.pkg.dev/${{ vars.SHARED_WIF_PROJECT }}/${{ vars.SHARED_WIF_REPO }}/${{ github.event.repository.name }}
         ghcr.io/battelleecology/${{ github.event.repository.name }}
+      # Images from main also carry the alpine version (v3.24.3). Later main
+      # builds on the same alpine version move that tag to the newer image.
+      # Version tags need the v prefix, or the registry cleanup rules delete
+      # the image.
       meta-tags: |
+        type=raw,value=v${{ needs.plan.outputs.alpine }},enable={{is_default_branch}}
         type=schedule
         type=ref,event=branch
         type=ref,event=tag
@@ -44,6 +75,29 @@ jobs:
         - registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+  # Tags the repo v<alpine version> after the first successful publish of that
+  # version. Done here rather than by triggering on tag pushes because tags
+  # pushed with GITHUB_TOKEN don't start new workflow runs. GITHUB_TOKEN also
+  # can't tag a commit that changes .github/workflows/ (HTTP 403), so keep
+  # alpine bumps out of PRs that change workflows, or tag those by hand.
+  tag:
+    needs: [ plan, build ]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: v${{ needs.plan.outputs.alpine }}
+    steps:
+      - run: |
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --silent 2>/dev/null; then
+            echo "$TAG already exists; leaving it on its original commit"
+          else
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" --silent
+            echo "Tagged $GITHUB_SHA as $TAG"
+          fi
 
   # Scan with trivy and import sarif
   scan:
