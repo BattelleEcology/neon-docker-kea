@@ -59,26 +59,24 @@ To build, simply run:
 ## How to use this hook
 
 If all goes well, you should obtain a `kea-hook-grape.so` file.
-Then, here is how to tell Kea to use this hook, for DHCPv4:
+Then, here is how to tell Kea to use this hook, for DHCPv4. The hook takes no
+parameters. The container image installs it in `/usr/lib/kea/hooks/`:
 
     {
     "Dhcp4":
     {
       "hooks-libraries": [
         {
-          "library": "/path/to/hea-hook-runscript/kea-hook-grape.so",
-          "parameters": {
-            "wait": true
-          }
+          "library": "/usr/lib/kea/hooks/kea-hook-grape.so"
         }
       ],
       ...
     }
     }
 
-The `wait` parameter indicates whether Kea waits for the script to exit.  That is,
-if set to `true`, Kea will block while the script is running.
-Refer to the Kea documentation for more information about each hook point:
+See [`kea-dhcp4.conf`](kea-dhcp4.conf) for a full example config, which also
+publishes leases to Kafka with the run_script hook. Refer to the Kea
+documentation for more information about each hook point:
 
 - DHCPv4 hooks reference: <https://jenkins.isc.org/job/Kea_doc/doxygen/de/df3/dhcpv4Hooks.html>
 - DHCPv6 hooks reference: <https://jenkins.isc.org/job/Kea_doc/doxygen/d1/d02/dhcpv6Hooks.html>

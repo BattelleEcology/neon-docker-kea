@@ -45,6 +45,11 @@ USER kea:kea
 
 # SETTINGS FOR THE SCRIPTS AND CONTAINER
 ENV KEA_CONFIG_FILE=/usr/local/etc/kea/kea-dhcp4.conf
+# Kea 3 only accepts lease files and control sockets under these directories.
+# The lease file lives on a volume at /kea, and entrypoint.sh creates the
+# socket directory.
+ENV KEA_DHCP_DATA_DIR=/kea \
+    KEA_CONTROL_SOCKET_DIR=/run/kea/socket
 
 ENTRYPOINT ["/scripts/entrypoint.sh"]
 
