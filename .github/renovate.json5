@@ -1,0 +1,22 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: ['config:recommended'],
+  // Renovate merges the PR itself once every check on it has passed. GitHub's
+  // native auto-merge is off in this repo, and would merge straight away
+  // anyway, because the org's default-branch ruleset doesn't require any
+  // status checks.
+  platformAutomerge: false,
+  packageRules: [
+    {
+      // Both Dockerfile stages are FROM alpine:<version>, so one PR bumps
+      // both. It's merged once its PR build passes; the push to main then
+      // publishes the image tagged v<alpine version> and tags this repo with
+      // it (see .github/workflows/docker-publish.yml).
+      description: 'Automerge Alpine base image updates',
+      matchDatasources: ['docker'],
+      matchDepNames: ['alpine'],
+      automerge: true,
+      commitMessageTopic: 'Alpine',
+    },
+  ],
+}
